@@ -1,0 +1,48 @@
+function OnClick(clickData)
+{
+	// --------------------------------------------------------
+	DOpus.ClearOutput();
+	// --------------------------------------------------------
+	var cmd = clickData.func.command;
+	cmd.deselect = false; // Prevent automatic deselection
+	// --------------------------------------------------------
+	cmd.RunCommand("Set VIEW=Details");
+	cmd.RunCommand("Set UTILITY=otherlog")
+	// --------------------------------------------------------
+	if (clickData.func.sourcetab.selected.count == 0)
+	{
+		DOpus.Output("  (none)");
+	}
+	else
+	{
+		var ReturnText = "";
+		for (var eSel = new Enumerator(clickData.func.sourcetab.selected); !eSel.atEnd(); eSel.moveNext())
+		{
+			if (eSel.item().ext.toLowerCase() == ".pdf")
+			{
+				var WshShell = new ActiveXObject("WScript.Shell");
+				var oExec = WshShell.Exec("pdftk.exe \"" + eSel.item().RealPath + "\" dump_data");
+				var input = "";
+				var SetCount = 0;
+				var PageCount = 0;
+
+				//Get Page Counts
+				if (!oExec.StdOut.AtEndOfStream)
+				{
+					var outputStr = oExec.StdOut.ReadAll().split('\n');
+					for(i=0;i<outputStr.length;i++)
+						if(outputStr[i].indexOf("NumberOfPages") != -1)
+						{
+							PageCount = outputStr[i].replace("NumberOfPages: ", "");
+						}
+				}
+
+				//Add to return
+				ReturnText += eSel.item().name + " - Pages " + (+PageCount) + "\n";
+				DOpus.Output(eSel.item().name + " - Pages " + (+PageCount)); //Split to log for live view
+			}
+		}
+		//Return to sender
+		cmd.RunCommand("Clipboard Set " + ReturnText);
+	}
+}
