@@ -1,0 +1,93 @@
+<?xml version="1.0"?>
+<button backcol="none" display="label" textcol="none">
+	<label>Create Watched Folder</label>
+	<icon1>#newcommand</icon1>
+	<function type="script">
+		<instruction>@script JScript</instruction>
+		<instruction>/**</instruction>
+		<instruction> * @summary Quick and dirty monitor folder for changes</instruction>
+		<instruction> * @description Uses autohotkey to monitor a folder for change.</instruction>
+		<instruction> * @link	https://getdawson.com</instruction>
+		<instruction> * @author	Scott Dawson</instruction>
+		<instruction> * @copyright Dawson Development 2022</instruction>
+		<instruction> * @version 1.0.0.0</instruction>
+		<instruction> */</instruction>
+		<instruction />
+		<instruction>/** </instruction>
+		<instruction>* @description DirOpus Onclick entry event</instruction>
+		<instruction>*/</instruction>
+		<instruction>function OnClick(clickData)</instruction>
+		<instruction>{</instruction>
+		<instruction>	var cmd = clickData.func.command;</instruction>
+		<instruction>	for (var eSel = new Enumerator(clickData.func.sourcetab.selected); !eSel.atEnd(); eSel.moveNext())</instruction>
+		<instruction>	{</instruction>
+		<instruction>		if (eSel.item().is_dir)</instruction>
+		<instruction>		{</instruction>
+		<instruction>			var folderToWatch = eSel.item().RealPath;</instruction>
+		<instruction>			var fileToWrite = &apos;%Temp%\\WatchedFolder_&apos; + eSel.item().Name  + &apos;.ahk&apos;;</instruction>
+		<instruction />
+		<instruction>			//Ignore this mess of text for a minute... Ill fix it</instruction>
+		<instruction>			var scriptTemplate = &quot;#NoEnv \n&quot; +</instruction>
+		<instruction>				&quot;SetWorkingDir %A_ScriptDir% \n&quot; +</instruction>
+		<instruction>				&quot;CoordMode, Mouse, Window \n&quot; +</instruction>
+		<instruction>				&quot;SendMode Input \n&quot; +</instruction>
+		<instruction>				&quot;#SingleInstance Force \n&quot; +</instruction>
+		<instruction>				&quot;SetTitleMatchMode 2 \n&quot; +</instruction>
+		<instruction>				&quot;#WinActivateForce \n&quot; +</instruction>
+		<instruction>				&quot;SetControlDelay 1 \n&quot; +</instruction>
+		<instruction>				&quot;SetWinDelay 0 \n&quot; +</instruction>
+		<instruction>				&quot;SetKeyDelay -1 \n&quot; +</instruction>
+		<instruction>				&quot;SetMouseDelay -1 \n&quot; +</instruction>
+		<instruction>				&quot;SetBatchLines -1 \n&quot; +</instruction>
+		<instruction>				&quot;Macro1: \n&quot; +</instruction>
+		<instruction>				&quot;WatchedFolder := \&quot;&quot; + folderToWatch + &quot;\&quot; \n&quot; +</instruction>
+		<instruction>				&quot;FileGetTime, TimeStamp, %WatchedFolder% \n&quot; +</instruction>
+		<instruction>				&quot;Loop \n&quot; +</instruction>
+		<instruction>				&quot;{ \n&quot; +</instruction>
+		<instruction>				&quot;	FileGetTime, TimeStampCheck, %WatchedFolder% \n&quot; +</instruction>
+		<instruction>				&quot;	If (TimeStamp != TimeStampCheck) \n&quot; +</instruction>
+		<instruction>				&quot;	{ \n&quot; +</instruction>
+		<instruction>				&quot;		MsgBox, 262192, Watched Folder Changed, Watched Folder: %WatchedFolder% \n&quot; +</instruction>
+		<instruction>				&quot;       Return \n&quot; +</instruction>
+		<instruction>				&quot;	} \n&quot; +</instruction>
+		<instruction>				&quot;	Sleep, 15000 \n&quot; +</instruction>
+		<instruction>				&quot;} \n&quot;</instruction>
+		<instruction>				;</instruction>
+		<instruction>		</instruction>
+		<instruction>			var fh = DOpus.fsUtil().openFile(fileToWrite, &apos;wa&apos;);</instruction>
+		<instruction>		    try {</instruction>
+		<instruction>				var blob = DOpus.create().blob();</instruction>
+		<instruction>				blob.copyFrom(scriptTemplate, &apos;utf8&apos;);</instruction>
+		<instruction>				var numBytesWritten = fh.write(blob);</instruction>
+		<instruction>				blob.free();</instruction>
+		<instruction>				fh.close();</instruction>
+		<instruction>		    } catch(e) { </instruction>
+		<instruction>			 	/* TODO */</instruction>
+		<instruction>			}</instruction>
+		<instruction>			</instruction>
+		<instruction>			//Run autohotkey.exe</instruction>
+		<instruction>			var WshShell = new ActiveXObject(&quot;WScript.Shell&quot;);</instruction>
+		<instruction>			var oExec = WshShell.Run(&quot;autohotkey.exe \&quot;&quot; + fileToWrite + &quot;\&quot;&quot;);</instruction>
+		<instruction />
+		<instruction>			//Show the confirmation popup the hot folder was made.</instruction>
+		<instruction>			var Dlg = DOpus.Dlg;</instruction>
+		<instruction>			Dlg.window = clickData.func.sourcetab;</instruction>
+		<instruction>			Dlg.template = &quot;NewPrompt1&quot;;</instruction>
+		<instruction>			Dlg.Show();</instruction>
+		<instruction>		}</instruction>
+		<instruction>	}</instruction>
+		<instruction>}</instruction>
+		<instruction />
+		<instruction>/**</instruction>
+		<instruction> * @description DirOpus script resources</instruction>
+		<instruction> */</instruction>
+		<instruction>==SCRIPT RESOURCES</instruction>
+		<instruction>&lt;resources&gt;</instruction>
+		<instruction>	&lt;resource name=&quot;NewPrompt1&quot; type=&quot;dialog&quot;&gt;</instruction>
+		<instruction>		&lt;dialog fontsize=&quot;8&quot; height=&quot;48&quot; lang=&quot;english&quot; standard_buttons=&quot;ok&quot; width=&quot;138&quot;&gt;</instruction>
+		<instruction>			&lt;control halign=&quot;left&quot; height=&quot;12&quot; name=&quot;static1&quot; title=&quot;New watched folder created.&quot; type=&quot;static&quot; valign=&quot;top&quot; width=&quot;108&quot; x=&quot;18&quot; y=&quot;12&quot; /&gt;</instruction>
+		<instruction>		&lt;/dialog&gt;</instruction>
+		<instruction>	&lt;/resource&gt;</instruction>
+		<instruction>&lt;/resources&gt;</instruction>
+	</function>
+</button>
